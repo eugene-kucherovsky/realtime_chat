@@ -1,0 +1,7 @@
+/server/target
+/server/static
+**/server/.env
+**.env
+
+/client/node_modules
+z_scripts.rs
