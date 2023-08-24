@@ -1,17 +1,17 @@
 pub mod api;
 pub mod config;
 pub mod model;
+pub mod scylla_db;
 pub mod websocket;
 
-use actix_web::{
-    http::header, middleware as actix_web_middleware, App, HttpServer,
-};
-
+use actix_web::{http::header, middleware as actix_web_middleware, App, HttpServer};
 use actix_cors::Cors;
 use dotenv::dotenv;
-
 use config::config::Settings;
 use api::chat::connection::establish_connection;
+
+use scylla::{Session, SessionBuilder};
+use scylla_db::scylla_db_queries;
 
 pub async fn run() -> std::io::Result<()> {
     dotenv().ok();
@@ -23,6 +23,11 @@ pub async fn run() -> std::io::Result<()> {
 
     let app_host = &config.app_host.to_owned();
     let app_port = &config.app_port.to_owned();
+
+    let scylla_uri = &config.scylla_db_uri.to_owned();
+    let session: Session = SessionBuilder::new().known_node(scylla_uri).build().await.unwrap();
+
+    scylla_db_queries(session).await;
 
     HttpServer::new(move || {
         let cors = Cors::default()

@@ -1,35 +1,55 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, ChangeEvent, FormEvent } from "react";
+import "./App.css";
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [messages, setMessages] = useState<String[]>([]);
+
+  let socket = new WebSocket("ws://localhost:8080/ws");
+
+  socket.onopen = function () {
+    console.log("Соединение установлено");
+  };
+
+  socket.onmessage = function (event) {
+    setMessages([...messages, event.data]);
+  };
+
+  socket.onclose = function (event) {
+    console.log("Соединение закрыто");
+  };
+
+  socket.onerror = function (error) {
+    console.log(`Ошибка: ${error}`);
+  };
+
+  const [formData, setFormData] = useState("");
+
+  function handleChange(event: ChangeEvent<HTMLInputElement>) {
+    setFormData(event.target.value);
+  }
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    socket.send(formData);
+    setFormData("");
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div>
+      <ul>
+        {messages.map((message, index) => (
+          <li key={index}>{message}</li>
+        ))}
+      </ul>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          name="message"
+          value={formData}
+          onChange={handleChange}
+        />
+        <button>Отправить</button>
+      </form>
+    </div>
+  );
 }
-
-export default App

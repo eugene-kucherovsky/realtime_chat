@@ -1,0 +1,16 @@
+version: '3.9'
+
+services:
+  scylla-node1:
+    image: scylladb/scylla:5.2.0
+    container_name: scylla-node1
+    restart: always
+    command: --smp 2
+    env_file:
+      - ./server/.env
+    ports:
+      - 9042:9042
+    volumes:
+      - scylla_data:/var/lib/scylla
+volumes:
+  scylla_data:

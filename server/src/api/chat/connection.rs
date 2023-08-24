@@ -1,6 +1,6 @@
-use actix_web::{get, web, HttpRequest, HttpResponse, Error};
-use actix_web_actors::ws;
 use crate::websocket::WebSocket;
+use actix_web::{get, web, Error, HttpRequest, HttpResponse};
+use actix_web_actors::ws;
 
 #[get("/ws")]
 async fn establish_connection(
