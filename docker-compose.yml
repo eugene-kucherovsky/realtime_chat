@@ -7,7 +7,7 @@ services:
     restart: always
     command: --smp 2
     env_file:
-      - ./server/.env
+      - ./.env
     ports:
       - 9042:9042
     volumes:

@@ -1,51 +1,59 @@
-import { useState, ChangeEvent, FormEvent } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent } from "react";
+import { useAppDispatch, useAppSelector } from "./redux/store";
+import { startConnecting, submitMessage } from "./redux/slices/chatSlice";
 import "./App.css";
 
+export type ChatMessage = {
+  id: string;
+  messageText: string;
+};
+
 export default function App() {
-  const [messages, setMessages] = useState<String[]>([]);
+  const dispatch = useAppDispatch();
+  const messages = useAppSelector((state) => state.chat.messages);
 
-  let socket = new WebSocket("ws://localhost:8080/ws");
+  useEffect(() => {
+    dispatch(startConnecting());
+  }, []);
 
-  socket.onopen = function () {
-    console.log("Соединение установлено");
-  };
-
-  socket.onmessage = function (event) {
-    setMessages([...messages, event.data]);
-  };
-
-  socket.onclose = function (event) {
-    console.log("Соединение закрыто");
-  };
-
-  socket.onerror = function (error) {
-    console.log(`Ошибка: ${error}`);
-  };
-
-  const [formData, setFormData] = useState("");
+  const [formData, setFormData] = useState({
+    id: "",
+    messageText: "",
+  });
 
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
-    setFormData(event.target.value);
+    const { name, value } = event.target;
+    setFormData((prevState) => {
+      return { ...prevState, [name]: value };
+    });
   }
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    socket.send(formData);
-    setFormData("");
+
+    if (formData.messageText === "") {
+      return;
+    } else {
+      dispatch(submitMessage(formData));
+      setFormData({
+        id: "",
+        messageText: "",
+      });
+    }
   };
 
   return (
     <div>
       <ul>
         {messages.map((message, index) => (
-          <li key={index}>{message}</li>
+          <li key={index}>{message.messageText}</li>
         ))}
       </ul>
       <form onSubmit={handleSubmit}>
         <input
           type="text"
-          name="message"
-          value={formData}
+          name="messageText"
+          value={formData.messageText}
           onChange={handleChange}
         />
         <button>Отправить</button>

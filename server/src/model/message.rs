@@ -13,5 +13,7 @@ pub struct Message {
     // pub received: bool,
     // pub readed: bool,
     pub message_text: String,
+    // pub image: Option<String>,
+    // pub audio: Option<String>,
     // pub created_at: DateTime<Utc>,
 }
